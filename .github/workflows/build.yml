@@ -1,0 +1,33 @@
+name: Build check
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      - name: Rebuild the extension from source
+        run: python3 source/build.py
+
+      - name: Fail if extension/ is out of date
+        run: |
+          git add -N extension
+          git diff --exit-code -- extension || {
+            echo "::error::extension/ does not match source/. Run 'python3 source/build.py' and commit the result."
+            exit 1
+          }
+
+      - name: Validate manifest and JavaScript syntax
+        run: |
+          python3 -c "import json; m=json.load(open('extension/manifest.json')); assert m['manifest_version']==3; print('manifest OK', m['version'])"
+          sudo apt-get install -y -q nodejs >/dev/null
+          for f in extension/*.js; do node --check "$f" && echo "syntax OK $f"; done

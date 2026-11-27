@@ -1,0 +1,109 @@
+:root {
+  --bg: #000;
+  --ink: #f5f5f7;
+  --muted: #7d7d83;
+  --digits: "Digits", "Big Shoulders Display", Impact, "Arial Narrow", sans-serif;
+  --ui: "UI", system-ui, "Roboto", "Segoe UI", sans-serif;
+}
+
+.flip {
+  --h: calc(var(--w) * 1.17);
+  --r: calc(var(--w) * 0.09);
+  --notch: calc(var(--w) * 0.036);
+  position: relative;
+  width: var(--w);
+  height: var(--h);
+  perspective: calc(var(--w) * 9);
+  font-family: var(--digits);
+  font-weight: 700;
+  font-size: calc(var(--h) * 0.69);
+  color: var(--ink);
+  user-select: none;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* hinge: a dark seam with a hair of light under it */
+.flip::after {
+  content: "";
+  position: absolute;
+  left: 0; right: 0; top: 50%;
+  height: 2px; margin-top: -1px;
+  background: #000;
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.045);
+  z-index: 5;
+  pointer-events: none;
+}
+
+.half, .flap {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  height: 50%;
+  overflow: hidden;
+}
+
+/* digits sit on the hinge: the glyph centre is a hair above the line box centre */
+.half span, .flap span {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  height: var(--h);
+  line-height: var(--h);
+  text-align: center;
+  transform: translateY(0.014em);
+  letter-spacing: 0.01em;
+}
+
+/* top face */
+.upper, .front {
+  top: 0;
+  transform-origin: 50% 100%;
+  border-radius: var(--r) var(--r) 1px 1px;
+  background: linear-gradient(180deg, #363638 0%, #2c2c2e 100%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.075);
+  -webkit-mask:
+    radial-gradient(circle at 0 100%, #0000 calc(var(--notch) - 0.5px), #000 var(--notch)),
+    radial-gradient(circle at 100% 100%, #0000 calc(var(--notch) - 0.5px), #000 var(--notch));
+  -webkit-mask-composite: source-in;
+  mask-composite: intersect;
+}
+.upper span, .front span { top: 0; }
+
+/* bottom face */
+.lower, .back {
+  bottom: 0;
+  border-radius: 1px 1px var(--r) var(--r);
+  background: linear-gradient(180deg, #2a2a2c 0%, #232325 100%);
+  box-shadow: inset 0 -1px 0 rgba(0, 0, 0, 0.4);
+  -webkit-mask:
+    radial-gradient(circle at 0 0, #0000 calc(var(--notch) - 0.5px), #000 var(--notch)),
+    radial-gradient(circle at 100% 0, #0000 calc(var(--notch) - 0.5px), #000 var(--notch));
+  -webkit-mask-composite: source-in;
+  mask-composite: intersect;
+}
+.lower span, .back span { bottom: 0; }
+
+/* the moving halves exist only while a flip is running */
+.flap { visibility: hidden; backface-visibility: hidden; z-index: 3; }
+.front { transform-origin: 50% 100%; }
+.back  { transform-origin: 50% 0; transform: rotateX(90deg); }
+.flip.flipping .flap { visibility: visible; will-change: transform; }
+
+/* light that follows the motion (animated from flip.js) */
+.shade {
+  position: absolute;
+  inset: 0;
+  background: #000;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* the edge of a moving flap catches the light, so it reads as a thick sheet, not a flat shape */
+.front::after, .back::after { content: ""; position: absolute; left: 0; right: 0; height: 1px; background: rgba(255, 255, 255, 0.16); }
+.front::after { bottom: 0; }
+.back::after { top: 0; }
+.gloss {
+  position: absolute; inset: 0; opacity: 0; pointer-events: none;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.55), rgba(255, 255, 255, 0) 65%);
+}
+.back .gloss { background: linear-gradient(0deg, rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0) 65%); }

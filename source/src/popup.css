@@ -1,0 +1,136 @@
+:root { color-scheme: dark; --rad: 22px; }
+* { box-sizing: border-box; margin: 0; font-weight: 700; }
+
+/* In the page, the iframe itself is the rounded card (see reminder.js) and everything in
+   here is opaque, so no website can ever show a box through it. */
+html { background: #161617; overflow: hidden; }
+html.mode-window { --rad: 0px; }
+
+body {
+  position: relative;
+  width: 100%;
+  padding: 16px 18px 18px;
+  overflow: hidden;
+  font-family: var(--ui);
+  -webkit-font-smoothing: antialiased;
+  color: var(--ink);
+  background: linear-gradient(165deg, #202022 0%, #141415 100%);
+  user-select: none;
+  -webkit-user-select: none;
+}
+html.mode-window body { min-height: 100vh; display: flex; flex-direction: column; justify-content: center; }
+
+/* hairline edge and a faint light along the top */
+body::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: var(--rad);
+  pointer-events: none;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.09), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+/* a ring of light that circles the edge once as the card arrives (compositor only: a rotating layer) */
+.edge {
+  position: fixed;
+  inset: 0;
+  z-index: 3;
+  border-radius: var(--rad);
+  padding: 1.5px;
+  overflow: hidden;
+  pointer-events: none;
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+}
+.edge i {
+  position: absolute;
+  left: 50%; top: 50%;
+  width: 240vmax; height: 240vmax;
+  margin: -120vmax 0 0 -120vmax;
+  opacity: 0;
+  background: conic-gradient(from 0deg, transparent 0deg, transparent 236deg, rgba(255, 255, 255, 0.95) 330deg, transparent 360deg);
+}
+body.in .edge i { animation: sweep 1.7s cubic-bezier(0.4, 0, 0.2, 1) 0.18s both; }
+@keyframes sweep {
+  0%   { opacity: 0; transform: rotate(0deg); }
+  10%  { opacity: 1; }
+  78%  { opacity: 1; }
+  100% { opacity: 0; transform: rotate(360deg); }
+}
+
+/* content rises in one piece after another (opacity and transform only) */
+.rise { opacity: 0; }
+body.in .rise { animation: rise 0.85s cubic-bezier(0.16, 1, 0.3, 1) calc(0.1s + var(--i) * 0.07s) both; }
+@keyframes rise { from { opacity: 0; transform: translate3d(0, 12px, 0); } to { opacity: 1; transform: none; } }
+
+header { display: flex; align-items: center; gap: 12px; }
+
+.app { display: block; width: 30px; height: 30px; border-radius: 8px; }
+
+.head { flex: 1; min-width: 0; }
+.title { font-size: 14px; font-weight: 700; letter-spacing: 0.005em; line-height: 1.2; color: #f5f5f7; }
+.sub { margin-top: 2px; font-size: 12px; line-height: 1.2; color: #8e8e93; }
+
+/* close button with a ring that counts down the time left on screen */
+.close {
+  position: relative;
+  width: 32px; height: 32px;
+  margin-right: -4px;
+  display: grid; place-items: center;
+  border: 0; border-radius: 50%;
+  background: transparent;
+  color: #8e8e93;
+  cursor: pointer;
+  pointer-events: none; /* in a page the host handles the mouse; keyboard still works */
+  transition: background 0.2s cubic-bezier(0.2, 0, 0, 1), color 0.2s cubic-bezier(0.2, 0, 0, 1);
+}
+html.mode-window .close { pointer-events: auto; }
+.close.hot, .close:hover, .close:focus-visible { background: rgba(255, 255, 255, 0.08); color: #fff; }
+.close:focus-visible { outline: 2px solid rgba(255, 255, 255, 0.85); outline-offset: 1px; }
+.close .x { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; }
+
+.ring { position: absolute; inset: 0; width: 100%; height: 100%; transform: rotate(-90deg); pointer-events: none; }
+.ring circle { fill: none; stroke-width: 2; }
+.ring .track { stroke: rgba(255, 255, 255, 0.1); }
+.ring .prog { stroke: rgba(255, 255, 255, 0.78); stroke-linecap: round; stroke-dasharray: 81.68; stroke-dashoffset: 0; }
+
+body.in .ring .prog { animation: ring var(--life, 12s) linear 0.9s forwards; }
+body.hovering .ring .prog, body.dragging .ring .prog, .close.hot .ring .prog,
+html.mode-window body:hover .ring .prog { animation-play-state: paused; }
+@keyframes ring { to { stroke-dashoffset: 81.68; } }
+
+.row { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; margin-top: 18px; }
+
+.pair { display: flex; gap: 10px; opacity: 0; }
+body.in .pair { opacity: 1; }
+.cell { --w: 60px; display: flex; flex-direction: column; align-items: center; gap: 8px; }
+.lab { font-size: 12px; color: #8e8e93; }
+
+.total { text-align: right; padding-bottom: 1px; }
+.num { display: flex; justify-content: flex-end; font-family: var(--digits); font-weight: 700; font-size: 60px; line-height: 0.9; letter-spacing: 0.01em; color: #fff; }
+/* each digit rises out of a clip, one after another: the real numbers, never placeholders */
+.dg { display: inline-block; height: 0.9em; overflow: hidden; }
+.dg i { display: block; font-style: normal; transform: translate3d(0, 108%, 0); }
+body.in .dg i { animation: up 0.95s cubic-bezier(0.16, 1, 0.3, 1) calc(0.3s + var(--k) * 0.06s) both; }
+@keyframes up { from { transform: translate3d(0, 108%, 0); } to { transform: none; } }
+.lbl { margin-top: 6px; font-size: 13px; color: #c7c7cc; }
+.date { margin-top: 3px; font-size: 12px; color: #7d7d83; }
+
+@media (prefers-reduced-motion: reduce) {
+  .rise, .pair { opacity: 1; }
+  .dg i { transform: none; }
+  body.in .rise, body.in .dg i, body.in .edge i { animation: none; }
+  .edge { display: none; }
+}
+
+/* where you are in the plan, and what you did today */
+.rail { margin-top: 16px; display: flex; flex-direction: column; gap: 8px; }
+.rail .r1 { display: flex; justify-content: space-between; align-items: baseline; font-size: 12px; color: #8e8e93; }
+.rail .r1 b { color: #fff; font-size: 14px; font-variant-numeric: tabular-nums; }
+.rbar { position: relative; height: 8px; border-radius: 6px; background: rgba(255, 255, 255, 0.09); box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.6); }
+.rbar i { position: absolute; inset: 0; border-radius: 6px; transform-origin: 0 50%; background: linear-gradient(90deg, #7a3e00, #ff9f0a 75%, #ffd68a); box-shadow: 0 0 14px rgba(255, 159, 10, 0.55); transform: scaleX(var(--p, 0)); }
+body.in .rbar i { animation: grow 1.4s cubic-bezier(0.16, 1, 0.3, 1) 0.5s both; }
+@keyframes grow { from { transform: scaleX(0); } }
+.rbar::after { content: ""; position: absolute; top: 50%; left: calc(var(--p, 0) * 100%); width: 12px; height: 12px; margin: -6px 0 0 -6px; border-radius: 50%; background: #fff; box-shadow: 0 0 0 3px rgba(255, 159, 10, 0.4), 0 0 14px 3px rgba(255, 159, 10, 0.8); }
+.rmsg { font-size: 13px; color: #ffc46b; line-height: 1.3; }
