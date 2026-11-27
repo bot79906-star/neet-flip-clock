@@ -20,6 +20,8 @@
 <p align="center">
   <img src="docs/screenshots/countdown.png" width="48%" alt="Countdown" />
   <img src="docs/screenshots/focus.png" width="48%" alt="Focus timer" />
+  <img src="docs/screenshots/remainder.png" width="48%" alt="remainder" />
+  <img src="docs/screenshots/journey.png" width="48%" alt="journey" />
 </p>
 
 
