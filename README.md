@@ -16,7 +16,7 @@
 
 > Every new tab becomes a calm, distraction-free countdown to your exam, with a focus timer built in.
 
-Add screenshots to docs/screenshots/ and uncomment:
+
 <p align="center">
   <img src="docs/screenshots/countdown.png" width="48%" alt="Countdown" />
   <img src="docs/screenshots/focus.png" width="48%" alt="Focus timer" />
