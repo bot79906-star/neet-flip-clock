@@ -39,3 +39,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 - Pomodoro focus timer inside the flip clock.
 - Today's study time, reference dates, settings sheet.
 - Reminder interval, toolbar badge and notifications.
+
+## [1.0.0 - 3.0.9] - INITIAL DEVLOPMENT STAGES NOT RECORED / HAS NO SUCH IMPORTANCE AS BASIC FUNCTIONALLITY
+
+
+
